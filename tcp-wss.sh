@@ -39,6 +39,11 @@ install_precheck(){
     fi
 }
 
+# install Cloudflare Warp
+install_warp(){
+    bash <(curl -fsSL git.io/warp.sh) proxy
+}
+
 install_nginx(){
     if [ -f "/usr/bin/apt-get" ];then
         apt-get install -y nginx cron socat
@@ -149,13 +154,14 @@ cat >/usr/local/etc/v2ray/config.json<<EOF
 				"domain": [
 					"domain:openai.com",
 					"domain:ai.com",
+                    "domain:ip.gs",
 					"cloudflare.com",
 					"openai.com",
 					"compute-pipe.com",
 					"edgecompute.app",
 					"every1dns.net",
 					"geosite:netflix",
-					"domain:ip.gs"
+					"geosite:google"
 				]
 			}
 		]
@@ -182,7 +188,6 @@ UUID：${v2uuid}
 }
 EOF
 
-    clear
 }
 
 install_sslibev(){
@@ -235,10 +240,6 @@ install_reality(){
     wget https://raw.githubusercontent.com/yeahwu/v2ray-wss/main/reality.sh && bash reality.sh
 }
 
-# install Cloudflare Warp
-install_warp(){
-    bash <(curl -fsSL git.io/warp.sh) proxy
-}
 
 client_v2ray(){
     wslink=$(echo -n "{\"port\":443,\"ps\":\"1024-wss\",\"tls\":\"tls\",\"id\":\"${v2uuid}\",\"aid\":0,\"v\":2,\"host\":\"${domain}\",\"type\":\"none\",\"path\":\"/${v2path}\",\"net\":\"ws\",\"add\":\"${domain}\",\"allowInsecure\":0,\"method\":\"none\",\"peer\":\"${domain}\",\"sni\":\"${domain}\"}" | base64 -w 0)
