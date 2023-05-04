@@ -15,7 +15,7 @@ ipaddr=$(hostname -I)
 install_precheck(){
     echo "====输入已经DNS解析好的域名===="
     read domain
-    
+
     if [ -f "/usr/bin/apt-get" ]; then
         apt-get update -y
         apt-get install -y net-tools curl
@@ -75,11 +75,11 @@ http {
         ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;
         ssl_prefer_server_ciphers on;
         ssl_certificate /etc/letsencrypt/live/$domain/fullchain.pem;
-        ssl_certificate_key /etc/letsencrypt/live/$domain/privkey.pem;        
+        ssl_certificate_key /etc/letsencrypt/live/$domain/privkey.pem;
         location / {
             default_type text/plain;
             return 200 "Hello World !";
-        }        
+        }
         location /$v2path {
             proxy_redirect off;
             proxy_pass http://127.0.0.1:8080;
@@ -93,43 +93,75 @@ http {
 EOF
 }
 
-acme_ssl(){    
+acme_ssl(){
     curl https://get.acme.sh | sh -s email=my@example.com
     mkdir -p /etc/letsencrypt/live/$domain
     ~/.acme.sh/acme.sh --issue -d $domain --standalone --keylength ec-256 --pre-hook "systemctl stop nginx" --post-hook "~/.acme.sh/acme.sh --installcert -d $domain --ecc --fullchain-file /etc/letsencrypt/live/$domain/fullchain.pem --key-file /etc/letsencrypt/live/$domain/privkey.pem --reloadcmd \"systemctl start nginx\""
 }
 
-install_v2ray(){    
+install_v2ray(){
     bash <(curl -L https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh)
-    
+
 cat >/usr/local/etc/v2ray/config.json<<EOF
 {
-  "inbounds": [
-    {
-      "port": 8080,
-      "protocol": "vmess",
-      "settings": {
-        "clients": [
-          {
-            "id": "$v2uuid"
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "ws",
-        "wsSettings": {
-        "path": "/$v2path"
-        }
-      }
-    }
-  ],
-  "outbounds": [
-    {
-      "protocol": "freedom",
-      "settings": {}
-    }
-  ]
+	"inbounds": [
+		{
+			"port": 8080,
+			"protocol": "vmess",
+			"settings": {
+				"clients": [
+					{
+						"id": "$v2uuid"
+					}
+				]
+			},
+			"streamSettings": {
+				"network": "ws",
+				"wsSettings": {
+					"path": "/$v2path"
+				}
+			}
+		}
+	],
+	"outbounds": [
+		{
+			"protocol": "freedom",
+			"settings": {}
+		},
+		{
+			"tag": "warp",
+			"protocol": "socks",
+			"settings": {
+				"servers": [
+					{
+						"address": "127.0.0.1",
+						"port": 40000
+					}
+				]
+			}
+		}
+	],
+	"routing": {
+		"rules": [
+			{
+				"type": "field",
+				"outboundTag": "warp",
+				"domain": [
+					"domain:openai.com",
+					"domain:ai.com",
+					"cloudflare.com",
+					"openai.com",
+					"compute-pipe.com",
+					"edgecompute.app",
+					"every1dns.net",
+					"geosite:netflix",
+					"domain:ip.gs"
+				]
+			}
+		]
+	}
 }
+
 EOF
 
     systemctl enable v2ray.service && systemctl restart v2ray.service && systemctl restart nginx.service
@@ -162,7 +194,7 @@ install_sslibev(){
     else
         yum update -y
         yum install epel-release -y
-        yum install gcc gettext autoconf libtool automake make pcre-devel asciidoc xmlto c-ares-devel libev-devel libsodium-devel mbedtls-devel git -y  
+        yum install gcc gettext autoconf libtool automake make pcre-devel asciidoc xmlto c-ares-devel libev-devel libsodium-devel mbedtls-devel git -y
     fi
 
     git clone https://github.com/shadowsocks/shadowsocks-libev.git
