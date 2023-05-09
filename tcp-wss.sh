@@ -159,9 +159,7 @@ cat >/usr/local/etc/v2ray/config.json<<EOF
 					"openai.com",
 					"compute-pipe.com",
 					"edgecompute.app",
-					"every1dns.net",
-					"geosite:netflix",
-					"geosite:google"
+					"every1dns.net"
 				]
 			}
 		]
