@@ -19,7 +19,7 @@ getIP(){
     echo "${serverIP}"
 }
 
-install_xray(){ 
+install_xray(){
     if [ -f "/usr/bin/apt-get" ]; then
         apt-get update -y
         apt-get install -y gawk curl
@@ -81,10 +81,40 @@ cat >/usr/local/etc/xray/config.json<<EOF
             "tag": "direct"
         },
         {
+			"tag": "warp",
+			"protocol": "socks",
+			"settings": {
+				"servers": [
+					{
+						"address": "127.0.0.1",
+						"port": 40000
+					}
+				]
+			}
+		},
+        {
             "protocol": "blackhole",
             "tag": "blocked"
         }
-    ]    
+    ],
+    "routing": {
+		"rules": [
+			{
+				"type": "field",
+				"outboundTag": "warp",
+				"domain": [
+					"domain:openai.com",
+					"domain:ai.com",
+                    "domain:ip.gs",
+					"cloudflare.com",
+					"openai.com",
+					"compute-pipe.com",
+					"edgecompute.app",
+					"every1dns.net"
+				]
+			}
+		]
+	}
 }
 EOF
 
