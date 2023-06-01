@@ -110,7 +110,8 @@ cat >/usr/local/etc/xray/config.json<<EOF
 					"openai.com",
 					"compute-pipe.com",
 					"edgecompute.app",
-					"every1dns.net"
+					"every1dns.net",
+                    "sentry.io"
 				]
 			}
 		]
